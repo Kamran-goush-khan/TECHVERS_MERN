@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Alert, Button, Label, Spinner, TextInput } from 'flowbite-react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  signInStart,
+  signInSuccess,
+  signInFailure,
+} from '../redux/user/userSlice';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { loading, error : errorMessage } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const changeHandler = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
@@ -15,11 +21,10 @@ const SignIn = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     if (!formData.password || !formData.email) {
-      return setErrorMessage('All Fields are required');
+      return dispatch(signInFailure('Please fill all fields'));
     }
     try {
-      setLoading(true);
-      setErrorMessage(null);
+      dispatch(signInStart());
       const res = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,17 +34,15 @@ const SignIn = () => {
       const data = await res.json();
 
       if (data.success === false) {
-        return setErrorMessage(data.message);
+        dispatch(signInFailure(data.message));
       }
-      setLoading(false);
 
       if (res.ok) {
+        dispatch(signInSuccess(data));
         navigate('/');
       }
- 
     } catch (err) {
-      setLoading(false);
-      setErrorMessage(err.message);
+      dispatch(signInFailure(err.message));
     }
   };
 
@@ -65,7 +68,6 @@ const SignIn = () => {
 
         <div className="flex-1">
           <form className="flex flex-col gap-4" onSubmit={submitHandler}>
-
             <div>
               <Label value="Your Email" />
               <TextInput
@@ -86,15 +88,19 @@ const SignIn = () => {
               />
             </div>
 
-            <Button gradientDuoTone="purpleToPink" type="submit" disabled={loading}>
-              {
-                loading ? (
-                  <>
-                  <Spinner size='sm' />
-                  <span className='pl-3'>...Loading</span>
-                  </>
-                ) : 'Sign In'
-              }
+            <Button
+              gradientDuoTone="purpleToPink"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Spinner size="sm" />
+                  <span className="pl-3">...Loading</span>
+                </>
+              ) : (
+                'Sign In'
+              )}
             </Button>
           </form>
 
