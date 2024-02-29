@@ -110,7 +110,7 @@ const SignIn = () => {
           <div className="flex gap-2 mt-5">
             <span>Don't have an account?</span>
             <Link to="/sign-up" className="text-blue-500">
-              Sing Up
+              Sign Up
             </Link>
           </div>
 
