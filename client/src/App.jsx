@@ -20,12 +20,12 @@ const App = () => {
         <Routes>
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<DashBoard />}></Route>
+            <Route path="/create-post" element={<CreatePost />} />
           </Route>
           <Route path="/projects" element={<Project />} />
           <Route path="/about" element={<About />} />
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
-          <Route path="/create-post" element={<CreatePost />} />
           <Route path="/" element={<Home />}></Route>
         </Routes>
         <Footer />
