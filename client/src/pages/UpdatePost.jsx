@@ -127,13 +127,13 @@ export default function UpdatePost() {
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
             }
-            value={formData.title}
+            value={formData.title || ''}
           />
           <Select
             onChange={(e) =>
               setFormData({ ...formData, category: e.target.value })
             }
-            value={formData.category}
+            value={formData.category || ''}
           >
             <option value="uncategorized">Select a category</option>
             <option value="javascript">JavaScript</option>
@@ -170,14 +170,14 @@ export default function UpdatePost() {
         {imageUploadError && <Alert color="failure">{imageUploadError}</Alert>}
         {formData.image && (
           <img
-            src={formData.image}
+            src={formData.image || ''}
             alt="upload"
             className="w-full h-72 object-cover"
           />
         )}
         <ReactQuill
           theme="snow"
-          value={formData.content}
+          value={formData.content || ''}
           placeholder="write something..."
           className="h-72 mb-12"
           onChange={(value) => setFormData({ ...formData, content: value })}
