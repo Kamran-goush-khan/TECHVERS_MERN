@@ -10,6 +10,7 @@ export const updateUser = async (req, res, next) => {
   if (req.user.id !== req.params.userId) {
     return next(errorHandler(403, 'You are not allowed to update this user'));
   }
+
   if (req.body.password) {
     if (req.body.password.length < 6) {
       return next(errorHandler(400, 'Password must be at least 6 characters'));
@@ -17,19 +18,19 @@ export const updateUser = async (req, res, next) => {
     req.body.password = bcryptjs.hashSync(req.body.password, 10);
   }
 
-  if (req.body.username) {
-    if (req.body.username.length < 7 || req.body.username.length > 20) {
+  if (req.body.name) {
+    if (req.body.name.length < 7 || req.body.name.length > 20) {
       return next(
         errorHandler(400, 'Username must be between 7 and 20 characters')
       );
     }
-    if (req.body.username.includes(' ')) {
+    if (req.body.name.includes(' ')) {
       return next(errorHandler(400, 'Username cannot contain spaces'));
     }
-    if (req.body.username !== req.body.username.toLowerCase()) {
+    if (req.body.name !== req.body.name.toLowerCase()) {
       return next(errorHandler(400, 'Username must be lowercase'));
     }
-    if (!req.body.username.match(/^[a-zA-Z0-9]+$/)) {
+    if (!req.body.name.match(/^[a-zA-Z0-9]+$/)) {
       return next(
         errorHandler(400, 'Username can only contain letters and numbers')
       );
@@ -40,7 +41,7 @@ export const updateUser = async (req, res, next) => {
       req.params.userId,
       {
         $set: {
-          username: req.body.username,
+          username: req.body.name,
           email: req.body.email,
           profilePicture: req.body.profilePicture,
           password: req.body.password,
@@ -76,9 +77,8 @@ export const signout = (req, res, next) => {
   }
 };
 
-export const getUsers = async (req, res, next) =>  {
-
-  if (!req.user.isAdmin) { 
+export const getUsers = async (req, res, next) => {
+  if (!req.user.isAdmin) {
     return next(errorHandler(403, 'You are not allowed to see all the user'));
   }
 
@@ -88,12 +88,12 @@ export const getUsers = async (req, res, next) =>  {
     const sortDirection = req.query.sortDirection || 'asc' ? 1 : -1;
 
     const users = await User.find()
-    .sort({createdAt : sortDirection})
-    .skip(startIndex)
-    .limit(limit);
+      .sort({ createdAt: sortDirection })
+      .skip(startIndex)
+      .limit(limit);
 
     const usersWithoutPassword = users.map((user) => {
-      const {password, ...rest} = user._doc;
+      const { password, ...rest } = user._doc;
       return rest;
     });
 
@@ -108,18 +108,30 @@ export const getUsers = async (req, res, next) =>  {
     );
 
     const lastMonthUsers = await User.countDocuments({
-      createdAt : {
-        $gte : oneMonthAgo,
+      createdAt: {
+        $gte: oneMonthAgo,
       },
     });
 
     res.status(200).json({
-      users : usersWithoutPassword,
+      users: usersWithoutPassword,
       totalUsers,
       lastMonthUsers,
-    })
-    
+    });
   } catch (error) {
     next(error);
   }
-}
+};
+
+export const getUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      next(errorHandler(404, 'User not found'));
+    }
+    const { password, ...rest } = user._doc;
+    res.status(200).json(rest);
+  } catch (err) {
+    next(err);
+  }
+};
